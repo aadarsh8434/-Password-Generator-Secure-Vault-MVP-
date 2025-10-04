@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Generator & Vault</title>
+    <style>
+        /* All the CSS from your style.css file goes here */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            max-width: 700px;
+            width: 100%;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        h1, h2 {
+            color: #0056b3;
+            margin-bottom: 20px;
+        }
+
+        section {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.05);
+            text-align: left; /* Align contents to left within sections */
+        }
+
+        .input-group, .options-group, .output-group, .save-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label, .options-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input[type="number"],
+        input[type="text"] {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+
+        .options-group label {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            cursor: pointer;
+            font-weight: normal;
+        }
+
+        .options-group input[type="checkbox"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.05em;
+            margin-top: 10px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .output-group {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: center; /* Center buttons and output */
+        }
+
+        .generated-password {
+            background-color: #e2f0fb;
+            border: 1px dashed #a0d4ff;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 1.2em;
+            font-family: 'Courier New', Courier, monospace;
+            color: #004085;
+            flex-grow: 1; /* Allows it to take available space */
+            text-align: center;
+            word-wrap: break-word; /* Ensures long passwords wrap */
+            min-width: 200px; /* Minimum width for the output */
+            cursor: pointer; /* Indicates it's clickable */
+        }
+
+        .password-strength {
+            flex-basis: 100%; /* Takes full width below password */
+            margin-top: 10px;
+            font-weight: bold;
+            color: #666;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-weight: bold;
+            margin-top: 10px;
+            flex-basis: 100%; /* Takes full width */
+        }
+
+        #copyBtn, #reset-btn {
+            background-color: #6c757d;
+            font-size: 0.9em;
+            padding: 8px 15px;
+        }
+        #copyBtn:hover, #reset-btn:hover {
+            background-color: #5a6268;
+        }
+
+        .save-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            align-items: center;
+        }
+
+        .save-group input {
+            flex-grow: 1;
+            margin-bottom: 0; /* Override default margin */
+        }
+
+        .save-group button {
+            margin-top: 0; /* Override default margin */
+            white-space: nowrap; /* Prevent button text from wrapping */
+        }
+
+        /* Vault specific styles */
+        .vault-list {
+            background-color: #fff;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 15px;
+            min-height: 100px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+
+        .vault-list h3 {
+            color: #0056b3;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 5px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .vault-list h3:first-child {
+            margin-top: 0; /* No top margin for the first category */
+        }
+
+        .vault-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #e9f5ff;
+            border: 1px solid #cce5ff;
+            border-radius: 5px;
+            padding: 10px 15px;
+            margin-bottom: 8px;
+            font-family: 'Courier New', Courier, monospace;
+            word-break: break-all;
+            transition: background-color 0.2s ease;
+        }
+
+        .vault-item:hover {
+            background-color: #d8edff;
+        }
+
+        .vault-password {
+            flex-grow: 1;
+            margin-right: 10px;
+            color: #004085;
+        }
+
+        .vault-item button {
+            padding: 5px 10px;
+            font-size: 0.8em;
+            margin-left: 8px; /* Space between buttons */
+            margin-top: 0; /* Override default */
+        }
+
+        .vault-item .delete-btn {
+            background-color: #dc3545;
+        }
+
+        .vault-item .delete-btn:hover {
+            background-color: #c82333;
+        }
+
+        .vault-item .copy-vault-btn { /* New style for copy button in vault */
+            background-color: #28a745;
+        }
+
+        .vault-item .copy-vault-btn:hover {
+            background-color: #218838;
+        }
+
+
+        #export-btn {
+            background-color: #17a2b8;
+            margin-top: 20px;
+        }
+        #export-btn:hover {
+            background-color: #138496;
+        }
+
+        .dark-mode-toggle {
+            background-color: #343a40;
+            color: white;
+            margin-top: 25px;
+            font-size: 0.9em;
+            padding: 8px 15px;
+        }
+
+        .dark-mode-toggle:hover {
+            background-color: #23272b;
+        }
+
+        /* Dark Mode Styles */
+        body.dark-mode {
+            background-color: #2c2c2c;
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .container {
+            background-color: #3b3b3b;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        body.dark-mode h1,
+        body.dark-mode h2 {
+            color: #8ab4f8; /* Lighter blue for dark mode headings */
+        }
+
+        body.dark-mode section {
+            background-color: #4a4a4a;
+            box-shadow: inset 0 0 5px rgba(255, 255, 255, 0.05);
+        }
+
+        body.dark-mode .input-group label,
+        body.dark-mode .options-group label {
+            color: #ccc;
+        }
+
+        body.dark-mode input[type="number"],
+        body.dark-mode input[type="text"] {
+            background-color: #555;
+            border: 1px solid #666;
+            color: #eee;
+        }
+        body.dark-mode input::placeholder { /* Placeholder text color in dark mode */
+            color: #aaa;
+        }
+
+        body.dark-mode button {
+            background-color: #5c85d6; /* Slightly brighter buttons */
+        }
+        body.dark-mode button:hover {
+            background-color: #4a6cb3;
+        }
+
+        body.dark-mode .generated-password {
+            background-color: #4f6e8c;
+            border: 1px dashed #7aaee2;
+            color: #e0f2ff;
+        }
+
+        body.dark-mode .password-strength {
+            color: #b0b0b0;
+        }
+
+        body.dark-mode .error-message {
+            color: #ff7272;
+        }
+
+        body.dark-mode #copyBtn,
+        body.dark-mode #reset-btn {
+            background-color: #5d6d7e;
+        }
+        body.dark-mode #copyBtn:hover,
+        body.dark-mode #reset-btn:hover {
+            background-color: #4a5b6d;
+        }
+
+        body.dark-mode #export-btn {
+            background-color: #4c8ca6;
+        }
+        body.dark-mode #export-btn:hover {
+            background-color: #3b768e;
+        }
+
+        body.dark-mode .vault-list {
+            background-color: #3b3b3b;
+            border: 1px solid #555;
+        }
+
+        body.dark-mode .vault-list h3 {
+            color: #8ab4f8;
+            border-bottom-color: #666;
+        }
+
+        body.dark-mode .vault-item {
+            background-color: #525252;
+            border: 1px solid #6a6a6a;
+        }
+        body.dark-mode .vault-item:hover {
+            background-color: #606060;
+        }
+        body.dark-mode .vault-password {
+            color: #e0f2ff;
+        }
+        body.dark-mode .vault-item .delete-btn {
+            background-color: #e25858;
+        }
+        body.dark-mode .vault-item .delete-btn:hover {
+            background-color: #d14a4a;
+        }
+        body.dark-mode .vault-item .copy-vault-btn {
+            background-color: #5cb85c;
+        }
+        body.dark-mode .vault-item .copy-vault-btn:hover {
+            background-color: #4cae4c;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Secure Password Generator & Vault</h1>
+
+        <section class="generator-section">
+            <h2>Generate a Password</h2>
+            <div class="input-group">
+                <label for="length">Length:</label>
+                <input type="number" id="length" value="12" min="4" max="64">
+            </div>
+
+            <div class="options-group">
+                <label><input type="checkbox" id="uppercase" checked> Include Uppercase</label>
+                <label><input type="checkbox" id="numbers" checked> Include Numbers</label>
+                <label><input type="checkbox" id="symbols" checked> Include Symbols</label>
+                <label><input type="checkbox" id="exclude-similar"> Exclude Similar (i, l, 1, L, o, 0, O)</label>
+                <label><input type="checkbox" id="no-repeat"> No Repeat Characters</label>
+            </div>
+
+            <div class="input-group">
+                <label for="custom-symbols">Custom Symbols (optional):</label>
+                <input type="text" id="custom-symbols" placeholder="e.g., !@#$*">
+            </div>
+
+            <button id="generateBtn">Generate Password</button>
+
+            <div class="output-group">
+                <div id="password-output" class="generated-password" title="Click to copy"></div>
+                <div id="strength-output" class="password-strength"></div>
+                <div id="error-msg" class="error-message"></div>
+                <button id="copyBtn">Copy Generated</button>
+                <button id="reset-btn">Reset Options</button>
+            </div>
+
+            <div class="save-group">
+                <input type="text" id="category-input" placeholder="Category (e.g., Social, Work, Banking)">
+                <button id="save-password-btn">Save to Vault</button>
+            </div>
+        </section>
+
+        <section class="vault-section">
+            <h2>Your Password Vault</h2>
+            <div id="vault-list" class="vault-list">
+                </div>
+            <button id="export-btn">Export Vault (JSON)</button>
+        </section>
+
+        <button id="dark-mode-btn" class="dark-mode-toggle">Toggle Dark Mode</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
