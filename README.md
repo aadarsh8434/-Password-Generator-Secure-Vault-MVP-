@@ -98,3 +98,10 @@ The backend initializes a vault JSON file if it doesn’t exist and treats empty
 - The backend treats empty category inputs as "Uncategorized" by default.
 - Cross-origin requests are enabled for easier development, but configure CORS carefully for production environments.
 
+## Live demo 
+
+
+
+
+https://github.com/user-attachments/assets/e064be04-e2ef-45ef-9ade-aa3abaaace48
+
